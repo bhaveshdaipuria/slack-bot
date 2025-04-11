@@ -17,10 +17,7 @@ A Slack bot that facilitates approval workflows within an organization. Users ca
    - `chat:write`
    - `commands`
    - `users:read`
-   - `users:read.email`
-   - `im:write`
-   - `im:history`
-   - `im:read`
+   - `chat:write.public`
 
 4. Create a Slash Command:
    - Command: `/approval-test`
@@ -62,9 +59,3 @@ A Slack bot that facilitates approval workflows within an organization. Users ca
 5. The approver will receive a message with Approve/Reject buttons
 6. The requester will be notified of the decision
 
-## Development
-
-To run the bot in development mode with auto-reload:
-```bash
-npm run dev
-``` 

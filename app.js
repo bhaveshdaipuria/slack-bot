@@ -8,10 +8,9 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN,
 });
 
-// Store pending approvals
+// Temporary in-memory storage for pending approvals (consider using a database for production level project)
 const pendingApprovals = new Map();
 
-// Handle the /approval-test slash command
 app.command("/approval-test", async ({ command, ack, body, client }) => {
   await ack();
 
@@ -105,7 +104,7 @@ app.view("approval_modal", async ({ ack, body, view, client }) => {
   });
 });
 
-// Handle approve action - DELETE the message
+// Handle approve action
 app.action("approve_action", async ({ ack, body, client }) => {
   await ack();
 
@@ -113,7 +112,7 @@ app.action("approve_action", async ({ ack, body, client }) => {
   const approval = pendingApprovals.get(messageTs);
 
   if (approval) {
-    // Delete the approval request message
+    // Delete the request message after it is rejected
     await client.chat.delete({
       channel: approval.approverId,
       ts: messageTs,
@@ -122,7 +121,7 @@ app.action("approve_action", async ({ ack, body, client }) => {
     // Notify requester
     await client.chat.postMessage({
       channel: approval.requesterId,
-      text: `✅ Your request was approved by <@${body.user.id}>!`,
+      text: `Your request was approved by <@${body.user.id}>!`,
     });
 
     // Notify approver
@@ -131,12 +130,12 @@ app.action("approve_action", async ({ ack, body, client }) => {
       text: `You approved a request from <@${approval.requesterId}>:\n> ${approval.approvalText}`,
     });
 
-    // Clean up
+    // Deleting from pending approval once request is approved
     pendingApprovals.delete(messageTs);
   }
 });
 
-// Handle reject action - DELETE the message
+// Handle reject action
 app.action("reject_action", async ({ ack, body, client }) => {
   await ack();
 
@@ -144,7 +143,7 @@ app.action("reject_action", async ({ ack, body, client }) => {
   const approval = pendingApprovals.get(messageTs);
 
   if (approval) {
-    // Delete the approval request message
+    // Delete the request message after it is rejected
     await client.chat.delete({
       channel: approval.approverId,
       ts: messageTs,
@@ -153,7 +152,7 @@ app.action("reject_action", async ({ ack, body, client }) => {
     // Notify requester
     await client.chat.postMessage({
       channel: approval.requesterId,
-      text: `❌ Your request was rejected by <@${body.user.id}>`,
+      text: `Your request was rejected by <@${body.user.id}>`,
     });
     // Notify approver
     await client.chat.postMessage({
@@ -161,12 +160,11 @@ app.action("reject_action", async ({ ack, body, client }) => {
       text: `You rejected a request from <@${approval.requesterId}>:\n> ${approval.approvalText}`,
     });
 
-    // Clean up
+    // Deleting from pending approval once request is rejected
     pendingApprovals.delete(messageTs);
   }
 });
 
-// Start the app
 (async () => {
   await app.start(process.env.PORT || 3000);
   console.log("⚡️ Approval bot running!");

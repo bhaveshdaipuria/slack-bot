@@ -4,8 +4,7 @@
   "description": "A Slack Bot for handling approval workflows",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "start": "npx nodemon app.js"
   },
   "dependencies": {
     "@slack/bolt": "^3.17.1",
